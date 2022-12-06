@@ -10,8 +10,8 @@ class LSHModel:
     def __init__(
         self,
         path: Optional[Union[Path, str]] = None,
-        n_groups: Optional[int] = 32,
-        n_clusters: Optional[int] = 16,
+        n_groups: Optional[int] = None,
+        n_clusters: Optional[int] = None,
     ):
         if path is None and n_groups is not None and n_clusters is not None:
             self.models: List[KMeans] = None
@@ -45,14 +45,14 @@ class LSHModel:
     def encode(clusters):
         return [f"{i}-{val}" for i, val in enumerate(clusters)]
 
-    def predict(self, features: np.ndarray, models: List[KMeans]) -> List[str]:
+    def predict(self, features: np.ndarray) -> List[str]:
         feature_groups = np.split(
             features, indices_or_sections=self.n_groups, axis=1
         )
 
         predictions = [
-            model.predict(feature_group)
-            for model, feature_group in zip(models, feature_groups)
+            model.predict(feature_group)[0]
+            for model, feature_group in zip(self.models, feature_groups)
         ]
         return self.encode(predictions)
 

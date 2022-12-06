@@ -1,11 +1,11 @@
-from tqdm import tqdm
-import torch
-import numpy as np
-from PIL import Image
 from pathlib import Path
-from torchvision.models.vgg import vgg16
-from torchvision import transforms
 
+import numpy as np
+import torch
+from PIL import Image
+from torchvision import transforms
+from torchvision.models.vgg import vgg16
+from tqdm import tqdm
 
 data_dir = Path("/data")
 model_dir = data_dir / "models"
@@ -19,7 +19,7 @@ transform_pipeline = transforms.Compose(
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],  # imagenet_mean
-            std=[0.229, 0.224, 0.225]  # imagenet_std
+            std=[0.229, 0.224, 0.225],  # imagenet_std
         ),
     ]
 )
@@ -29,8 +29,7 @@ feature_extractor = vgg16(progress=False).eval()
 feature_extractor.classifier = feature_extractor.classifier[:4]
 
 for image_path in tqdm(
-    images_dir.glob("*.jpg"),
-    total=len(list(images_dir.glob("*.jpg")))
+    images_dir.glob("*.jpg"), total=len(list(images_dir.glob("*.jpg")))
 ):
     image = Image.open(image_path)
     image_tensor = transform_pipeline(image).unsqueeze(0)

@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   get-data:
-    build: 
+    build:
       dockerfile: ../Dockerfile
       context: get-data
     image: get-data
@@ -11,8 +11,18 @@ services:
         source: ./data
         target: /data
 
+  infer-features:
+    build:
+      dockerfile: ../Dockerfile
+      context: infer-features
+    image: infer-features
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data
+
   train-lsh-model:
-    build: 
+    build:
       dockerfile: ../Dockerfile
       context: train-lsh-model
     image: train-lsh-model
@@ -24,12 +34,29 @@ services:
         source: ./src
         target: /src
 
-  infer-features:
-    build: 
+  infer-hashes:
+    build:
       dockerfile: ../Dockerfile
-      context: infer-features
-    image: infer-features
+      context: infer-hashes
+    image: infer-hashes
     volumes:
       - type: bind
         source: ./data
         target: /data
+      - type: bind
+        source: ./src
+        target: /src
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.3.3
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      ELASTIC_PASSWORD: password
+    volumes:
+      - type: bind
+        source: ./data/elasticsearch
+        target: /usr/share/elasticsearch/data

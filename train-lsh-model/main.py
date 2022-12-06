@@ -32,10 +32,7 @@ def main(
 ):
     timestamp = datetime.now().isoformat(timespec="seconds")
     features = np.vstack(
-        [
-            np.load(features_path)
-            for features_path in features_dir.glob("*.npy")
-        ]
+        [np.load(features_path) for features_path in features_dir.glob("*.npy")]
     )
 
     random_indices = np.random.choice(
