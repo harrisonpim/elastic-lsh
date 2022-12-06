@@ -24,3 +24,12 @@ services:
         source: ./src
         target: /src
 
+  infer-features:
+    build: 
+      dockerfile: ../Dockerfile
+      context: infer-features
+    image: infer-features
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data

@@ -9,7 +9,7 @@ from tqdm import tqdm
 class LSHModel:
     def __init__(
         self,
-        path: Optional[Union[Path, str]],
+        path: Optional[Union[Path, str]] = None,
         n_groups: Optional[int] = 32,
         n_clusters: Optional[int] = 16,
     ):
@@ -57,7 +57,7 @@ class LSHModel:
         return self.encode(predictions)
 
     def save(self, path: Path):
-        np.save(path, self)
+        np.save(path, self.models)
 
     def load(self, path: Path) -> List[KMeans]:
         return np.load(path, allow_pickle=True)

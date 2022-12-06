@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -8,13 +9,15 @@ from src.model import LSHModel
 
 app = typer.Typer()
 
-data_dir = Path("/data/raw")
+data_dir = Path("/data")
+model_dir = data_dir / "models"
+features_dir = data_dir / "raw" / "features"
 
 
 @app.command()
 def main(
     n_training_vectors: int = typer.Option(
-        10_000, help="Number of training vectors to use"
+        100, help="Number of training vectors to use"
     ),
     n_groups: int = typer.Option(
         32,
@@ -27,7 +30,13 @@ def main(
         16, help="Number of clusters to fit within each group"
     ),
 ):
-    features = np.load(data_dir / "features.npy")
+    timestamp = datetime.now().isoformat(timespec="seconds")
+    features = np.vstack(
+        [
+            np.load(features_path)
+            for features_path in features_dir.glob("*.npy")
+        ]
+    )
 
     random_indices = np.random.choice(
         features.shape[0], n_training_vectors, replace=False
@@ -36,8 +45,7 @@ def main(
 
     model = LSHModel(n_groups=n_groups, n_clusters=n_clusters)
     model.fit(training_features)
-
-    model.save(data_dir / "model.npy")
+    model.save(model_dir / timestamp)
 
 
 if __name__ == "__main__":
