@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  get-data:
+    build: 
+      dockerfile: ../Dockerfile
+      context: get-data
+    image: get-data
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data
+
+  train-lsh-model:
+    build: 
+      dockerfile: ../Dockerfile
+      context: train-lsh-model
+    image: train-lsh-model
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data
+      - type: bind
+        source: ./src
+        target: /src
+
