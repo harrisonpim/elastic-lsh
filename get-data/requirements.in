@@ -1,3 +1,4 @@
 datasets
 requests
 Pillow
+boto3

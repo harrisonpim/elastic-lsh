@@ -6,16 +6,21 @@ services:
       dockerfile: ../Dockerfile
       context: get-data
     image: get-data
+    env_file: .env
     volumes:
       - type: bind
         source: ./data
         target: /data
+      - type: bind
+        source: ~/.aws
+        target: /root/.aws
 
   infer-features:
     build:
       dockerfile: ../Dockerfile
       context: infer-features
     image: infer-features
+    env_file: .env
     volumes:
       - type: bind
         source: ./data
@@ -26,6 +31,7 @@ services:
       dockerfile: ../Dockerfile
       context: train-lsh-model
     image: train-lsh-model
+    env_file: .env
     volumes:
       - type: bind
         source: ./data
@@ -39,6 +45,7 @@ services:
       dockerfile: ../Dockerfile
       context: infer-hashes
     image: infer-hashes
+    env_file: .env
     volumes:
       - type: bind
         source: ./data
@@ -60,3 +67,14 @@ services:
       - type: bind
         source: ./data/elasticsearch
         target: /usr/share/elasticsearch/data
+
+  terraform:
+    image: hashicorp/terraform:1.0.0
+    working_dir: /terraform
+    volumes:
+      - type: bind
+        source: ./terraform
+        target: /terraform
+      - type: bind
+        source: ~/.aws
+        target: /root/.aws
