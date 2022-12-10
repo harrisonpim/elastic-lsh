@@ -12,5 +12,8 @@ echo "COMPUTE_ENVIRONMENT=local" >> .env
 echo "STORAGE_ENVIRONMENT=s3" >> .env
 echo "DATA_DIR=/data/raw" >> .env
 
-# add the terraform outputs to the .env file
-docker compose build terraform; docker compose run terraform output >> .env
+# add the terraform outputs to the .env file, without whitespace
+docker compose build terraform
+docker compose run terraform output -json \
+  | jq -r 'to_entries[] | "\(.key)=\(.value.value)"' \
+  >> .env

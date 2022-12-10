@@ -3,6 +3,11 @@
 ## Creating a .env file
 
 ```sh
-. ./scripts/create-local-env-file.sh
+sh ./scripts/create-local-env-file.sh
 ```
 
+## Push a container image to ECR
+
+```sh
+sh ./scripts/push-image-to-ecr.sh
+```
