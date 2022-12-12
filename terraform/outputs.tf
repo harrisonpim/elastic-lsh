@@ -1,0 +1,18 @@
+output "AWS_OPENSEARCH_ENDPOINT" {
+  value = aws_opensearch_domain.elastic_lsh.endpoint
+}
+output "AWS_S3_BUCKET_ID" {
+  value = aws_s3_bucket.images.id
+}
+output "AWS_LOCAL_ROLE_ARN" {
+  value = aws_iam_role.local.arn
+}
+output "AWS_REGION" {
+  value = local.region
+}
+output "AWS_ACCOUNT_ID" {
+  value = data.aws_caller_identity.current.account_id
+}
+output "AWS_ECS_CLUSTER_ARN" {
+  value = aws_ecs_cluster.cluster.arn
+}
