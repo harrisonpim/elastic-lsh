@@ -12,8 +12,6 @@ touch $DOTENV_PATH
 
 # add the environment variables to the .env file
 echo "AWS_PROFILE=harrisonpim" >> $DOTENV_PATH
-echo "STORAGE_ENVIRONMENT=s3" >> $DOTENV_PATH
-echo "DATA_DIR=/data/raw" >> $DOTENV_PATH
 
 # add the terraform outputs to the .env file, without whitespace
 terraform output -json \

@@ -2,3 +2,4 @@ datasets
 requests
 Pillow
 boto3
+loguru

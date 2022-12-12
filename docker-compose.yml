@@ -8,11 +8,15 @@ services:
     image: get-data
     env_file: .env
     environment:
-      - STORAGE_ENVIRONMENT=local
+      - STORAGE_ENVIRONMENT=s3
+      - DATA_DIR=/data/raw
     volumes:
       - type: bind
         source: ./data
         target: /data
+      - type: bind
+        source: ./src
+        target: /src
       - type: bind
         source: ~/.aws
         target: /root/.aws

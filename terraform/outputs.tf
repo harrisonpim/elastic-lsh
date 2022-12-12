@@ -16,3 +16,9 @@ output "AWS_ACCOUNT_ID" {
 output "AWS_ECS_CLUSTER_ARN" {
   value = aws_ecs_cluster.cluster.arn
 }
+output "AWS_ECS_SUBNET_ID" {
+  value = aws_subnet.public.id
+}
+output "AWS_ECS_SECURITY_GROUP_ID" {
+  value = aws_security_group.ecs.id
+}
