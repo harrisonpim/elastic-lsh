@@ -1,5 +1,7 @@
+boto3
+loguru
 numpy
 Pillow
-tqdm
 torch
 torchvision
+tqdm

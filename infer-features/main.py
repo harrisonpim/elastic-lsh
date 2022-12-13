@@ -1,16 +1,13 @@
-from pathlib import Path
-
-import numpy as np
 import torch
-from PIL import Image
+
 from torchvision import transforms
 from torchvision.models.vgg import vgg16
-from tqdm import tqdm
 
-data_dir = Path("/data")
-model_dir = data_dir / "models"
-images_dir = data_dir / "raw" / "images"
-features_dir = data_dir / "raw" / "features"
+from src.log import get_logger
+from src.save import save_numpy_array
+from src.load import yield_image_filenames, count_images, load_image
+
+log = get_logger()
 
 transform_pipeline = transforms.Compose(
     [
@@ -28,12 +25,18 @@ torch.hub.set_dir("/data/models")
 feature_extractor = vgg16(progress=False).eval()
 feature_extractor.classifier = feature_extractor.classifier[:4]
 
-for image_path in tqdm(
-    images_dir.glob("*.jpg"), total=len(list(images_dir.glob("*.jpg")))
-):
-    image = Image.open(image_path)
-    image_tensor = transform_pipeline(image).unsqueeze(0)
-    features = feature_extractor(image_tensor)
-    features = features.to_dense().detach().numpy().flatten()
+total_images = count_images()
+for i, image_filename in enumerate(yield_image_filenames()):
+    log.info(
+        f"Processing image {i + 1} of {total_images} "
+        f"({i/total_images*100:.2f}%)"
+    )
+    try:
+        image = load_image(image_filename)
+        image_tensor = transform_pipeline(image).unsqueeze(0)
+        features = feature_extractor(image_tensor)
+        features = features.to_dense().detach().numpy().flatten()
+    except Exception as e:
+        log.error(f"Error processing image {image_filename}: {e}")
 
-    np.save(features_dir / f"{image_path.stem}.npy", features)
+    save_numpy_array(features, image_filename)

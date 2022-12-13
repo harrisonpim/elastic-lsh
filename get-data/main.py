@@ -3,8 +3,7 @@ from io import BytesIO
 import requests
 from datasets import load_dataset
 from PIL import Image, UnidentifiedImageError
-from save_data import save_image, save_json
-
+from src.save import save_image, save_json
 from src.log import get_logger
 
 log = get_logger()
@@ -26,13 +25,12 @@ for i, row in enumerate(dataset):
         image_response = requests.get(row["URL"], timeout=5)
         image = Image.open(BytesIO(image_response.content))
         image.thumbnail((256, 256))
-        # save the image as a jpg
-        save_image(image=image, filename=row["hash"])
 
+        save_image(image=image, filename=row["hash"])
         descriptions[row["hash"]] = row["TEXT"]
+
     except (requests.RequestException, UnidentifiedImageError, OSError) as e:
-        log.error(f"Error downloading image from {row['URL']}")
-        log.error(e)
+        log.error(f"Error downloading image from {row['URL']}: {e}")
         continue
 
 save_json(descriptions, "descriptions")
