@@ -28,7 +28,8 @@ services:
     image: infer-features
     env_file: .env
     environment:
-      - STORAGE_ENVIRONMENT=local
+      - STORAGE_ENVIRONMENT=s3
+      - DATA_DIR=/data/raw
     volumes:
       - type: bind
         source: ./data
@@ -41,7 +42,8 @@ services:
     image: train-lsh-model
     env_file: .env
     environment:
-      - STORAGE_ENVIRONMENT=local
+      - STORAGE_ENVIRONMENT=s3
+      - DATA_DIR=/data/raw
     volumes:
       - type: bind
         source: ./data
@@ -57,7 +59,8 @@ services:
     image: infer-hashes
     env_file: .env
     environment:
-      - STORAGE_ENVIRONMENT=local
+      - STORAGE_ENVIRONMENT=s3
+      - DATA_DIR=/data/raw
     volumes:
       - type: bind
         source: ./data

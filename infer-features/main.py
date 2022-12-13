@@ -1,11 +1,10 @@
 import torch
-
 from torchvision import transforms
 from torchvision.models.vgg import vgg16
 
+from src.load import count_images, load_image, yield_image_filenames
 from src.log import get_logger
-from src.save import save_numpy_array
-from src.load import yield_image_filenames, count_images, load_image
+from src.save import save_features
 
 log = get_logger()
 
@@ -39,4 +38,4 @@ for i, image_filename in enumerate(yield_image_filenames()):
     except Exception as e:
         log.error(f"Error processing image {image_filename}: {e}")
 
-    save_numpy_array(features, image_filename)
+    save_features(features, image_filename)

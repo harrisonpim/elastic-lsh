@@ -3,8 +3,9 @@ from io import BytesIO
 import requests
 from datasets import load_dataset
 from PIL import Image, UnidentifiedImageError
-from src.save import save_image, save_json
+
 from src.log import get_logger
+from src.save import save_image, save_json
 
 log = get_logger()
 

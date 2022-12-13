@@ -4,14 +4,11 @@ from pathlib import Path
 import numpy as np
 import typer
 
-from src.data import split_features
+from src.load import load_features, yield_features_filenames
 from src.model import LSHModel
+from src.save import save_model
 
 app = typer.Typer()
-
-data_dir = Path("/data")
-model_dir = data_dir / "models"
-features_dir = data_dir / "raw" / "features"
 
 
 @app.command()
@@ -32,7 +29,7 @@ def main(
 ):
     timestamp = datetime.now().isoformat(timespec="seconds")
     features = np.vstack(
-        [np.load(features_path) for features_path in features_dir.glob("*.npy")]
+        [load_features(filename) for filename in yield_features_filenames]
     )
 
     random_indices = np.random.choice(
@@ -42,7 +39,8 @@ def main(
 
     model = LSHModel(n_groups=n_groups, n_clusters=n_clusters)
     model.fit(training_features)
-    model.save(model_dir / timestamp)
+
+    save_model(model, f"lsh-{timestamp}")
 
 
 if __name__ == "__main__":

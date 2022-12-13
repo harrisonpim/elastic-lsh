@@ -1,9 +1,10 @@
-from PIL import Image
 import os
 from io import BytesIO
 from pathlib import Path
 
 import boto3
+import numpy as np
+from PIL import Image
 
 from src.log import get_logger
 
@@ -96,3 +97,47 @@ def count_images_from_s3():
     for page in paginator.paginate(Bucket=bucket, Prefix="images"):
         count += len(page["Contents"])
     return count
+
+
+def load_features(filename: str):
+    if storage_env == "local":
+        return load_features_locally(filename)
+    elif storage_env == "s3":
+        return load_features_from_s3(filename)
+    else:
+        raise ValueError("Unknown environment")
+
+
+def load_features_locally(filename: str):
+    path = data_dir / "features" / f"{filename}.npy"
+    log.info(f"Loading numpy array from {path}")
+    return np.load(path)
+
+
+def load_features_from_s3(filename: str):
+    key = f"features/{filename}.npy"
+    log.info(f"Loading numpy array from s3: {bucket} {key}")
+    return np.load(
+        BytesIO(s3.get_object(Bucket=bucket, Key=key)["Body"].read())
+    )
+
+
+def yield_features_filenames():
+    if storage_env == "local":
+        return yield_features_filenames_locally()
+    elif storage_env == "s3":
+        return yield_features_filenames_from_s3()
+    else:
+        raise ValueError("Unknown environment")
+
+
+def yield_features_filenames_locally():
+    for path in (data_dir / "features").iterdir():
+        yield path.stem
+
+
+def yield_features_filenames_from_s3():
+    paginator = s3.get_paginator("list_objects_v2")
+    for page in paginator.paginate(Bucket=bucket, Prefix="features"):
+        for content in page["Contents"]:
+            yield Path(content["Key"]).stem

@@ -1,13 +1,14 @@
-from PIL import Image
-import numpy as np
 import json
 import os
 from io import BytesIO
 from pathlib import Path
 
 import boto3
+import numpy as np
+from PIL import Image
 
-from src.log import get_logger
+from .log import get_logger
+from .model import LSHModel
 
 log = get_logger()
 
@@ -91,23 +92,23 @@ def save_json_to_s3(json_data: dict, filename: str):
     )
 
 
-def save_numpy_array(array: np.ndarray, filename: str):
+def save_features(array: np.ndarray, filename: str):
     if storage_env == "local":
-        save_numpy_array_locally(array, filename)
+        save_features_locally(array, filename)
     elif storage_env == "s3":
-        save_numpy_array_to_s3(array, filename)
+        save_features_to_s3(array, filename)
     else:
         raise ValueError("Unknown environment")
 
 
-def save_numpy_array_locally(array: np.ndarray, filename: str):
+def save_features_locally(array: np.ndarray, filename: str):
     path = data_dir / "features" / f"{filename}.npy"
     log.info(f"Saving numpy array to {path}")
     np.save(path, array)
 
 
-def save_numpy_array_to_s3(array: np.ndarray, filename: str):
-    key = f"{filename}.npy"
+def save_features_to_s3(array: np.ndarray, filename: str):
+    key = f"features/{filename}.npy"
     log.info(f"Saving numpy array to s3: {bucket} {key}")
     array_binary = BytesIO()
     np.save(array_binary, array)
@@ -115,5 +116,33 @@ def save_numpy_array_to_s3(array: np.ndarray, filename: str):
         Bucket=bucket,
         Key=key,
         Body=array_binary.getvalue(),
+        ContentType="application/numpy",
+    )
+
+
+def save_model(model: LSHModel, model_name: str):
+    if storage_env == "local":
+        save_model_locally(model, model_name)
+    elif storage_env == "s3":
+        save_model_to_s3(model, model_name)
+    else:
+        raise ValueError("Unknown environment")
+
+
+def save_model_locally(model: LSHModel, model_name: str):
+    path = data_dir.parent / "models" / model_name
+    log.info(f"Saving model to {path}")
+    model.save(path)
+
+
+def save_model_to_s3(model: LSHModel, model_name: str):
+    key = f"models/{model_name}.npy"
+    log.info(f"Saving model to s3: {bucket} {key}")
+    model_binary = BytesIO()
+    model.save(model_binary)
+    s3.put_object(
+        Bucket=bucket,
+        Key=key,
+        Body=model_binary.getvalue(),
         ContentType="application/numpy",
     )
