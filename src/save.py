@@ -47,7 +47,7 @@ def save_image(image: Image, filename: str):
 
 
 def save_image_locally(image: Image, filename: str):
-    path = data_dir / "images" / f"{filename}.jpg"
+    path = data_dir / "raw" / "images" / f"{filename}.jpg"
     log.info(f"Saving image to {path}")
     image.save(path)
 
@@ -75,7 +75,7 @@ def save_json(json_data: dict, filename: str):
 
 
 def save_json_locally(json_data: dict, filename: str):
-    path = data_dir / f"{filename}.json"
+    path = data_dir / "raw" / f"{filename}.json"
     log.info(f"Saving json to {path}")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(json_data, f)
@@ -102,7 +102,7 @@ def save_features(array: np.ndarray, filename: str):
 
 
 def save_features_locally(array: np.ndarray, filename: str):
-    path = data_dir / "features" / f"{filename}.npy"
+    path = data_dir / "raw" / "features" / f"{filename}.npy"
     log.info(f"Saving numpy array to {path}")
     np.save(path, array)
 
@@ -130,7 +130,7 @@ def save_model(model: LSHModel, model_name: str):
 
 
 def save_model_locally(model: LSHModel, model_name: str):
-    path = data_dir.parent / "models" / model_name
+    path = data_dir / "models" / model_name
     log.info(f"Saving model to {path}")
     model.save(path)
 

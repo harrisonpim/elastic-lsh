@@ -10,20 +10,41 @@ class LSHModel:
     def __init__(
         self,
         path: Optional[Union[Path, str]] = None,
+        model_bytes: Optional[bytes] = None,
         n_groups: Optional[int] = None,
         n_clusters: Optional[int] = None,
     ):
-        if path is None and n_groups is not None and n_clusters is not None:
+        if (
+            path is None
+            and n_groups is not None
+            and n_clusters is not None
+            and model_bytes is None
+        ):
             self.models: List[KMeans] = None
             self.n_groups = n_groups
             self.n_clusters = n_clusters
-        elif path is not None and n_groups is None and n_clusters is None:
+        elif (
+            path is not None
+            and n_groups is None
+            and n_clusters is None
+            and model_bytes is None
+        ):
             self.models = self.load(path)
+            self.n_groups = len(self.models)
+            self.n_clusters = self.models[0].n_clusters
+        elif (
+            path is None
+            and n_groups is None
+            and n_clusters is None
+            and model_bytes is not None
+        ):
+            self.models = self.load_binary(model_bytes)
             self.n_groups = len(self.models)
             self.n_clusters = self.models[0].n_clusters
         else:
             raise ValueError(
-                "Either path or n_groups and n_clusters must be specified"
+                "Either path or model_bytes or "
+                "(n_groups and n_clusters) must be specified"
             )
 
     def fit(self, features: np.ndarray, verbose: bool = False) -> List[KMeans]:
@@ -61,3 +82,6 @@ class LSHModel:
 
     def load(self, path: Path) -> List[KMeans]:
         return np.load(path, allow_pickle=True)
+
+    def load_binary(self, model_bytes: bytes) -> List[KMeans]:
+        return np.load(model_bytes, allow_pickle=True)

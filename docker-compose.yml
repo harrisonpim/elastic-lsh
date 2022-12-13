@@ -9,7 +9,7 @@ services:
     env_file: .env
     environment:
       - STORAGE_ENVIRONMENT=s3
-      - DATA_DIR=/data/raw
+      - DATA_DIR=/data
     volumes:
       - type: bind
         source: ./data
@@ -29,7 +29,7 @@ services:
     env_file: .env
     environment:
       - STORAGE_ENVIRONMENT=s3
-      - DATA_DIR=/data/raw
+      - DATA_DIR=/data
     volumes:
       - type: bind
         source: ./data
@@ -43,7 +43,7 @@ services:
     env_file: .env
     environment:
       - STORAGE_ENVIRONMENT=s3
-      - DATA_DIR=/data/raw
+      - DATA_DIR=/data
     volumes:
       - type: bind
         source: ./data
@@ -60,7 +60,7 @@ services:
     env_file: .env
     environment:
       - STORAGE_ENVIRONMENT=s3
-      - DATA_DIR=/data/raw
+      - DATA_DIR=/data
     volumes:
       - type: bind
         source: ./data

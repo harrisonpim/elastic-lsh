@@ -1,3 +1,4 @@
+import json
 import os
 from io import BytesIO
 from pathlib import Path
@@ -45,7 +46,7 @@ def load_image(filename: str):
 
 
 def load_image_locally(filename: str):
-    path = data_dir / "images" / f"{filename}.jpg"
+    path = data_dir / "raw" / "images" / f"{filename}.jpg"
     log.info(f"Loading image from {path}")
     return Image.open(path)
 
@@ -67,7 +68,7 @@ def yield_image_filenames():
 
 
 def yield_image_filenames_locally():
-    for path in (data_dir / "images").iterdir():
+    for path in (data_dir / "raw" / "images").iterdir():
         yield path.stem
 
 
@@ -88,7 +89,7 @@ def count_images():
 
 
 def count_images_locally():
-    return len(list((data_dir / "images").iterdir()))
+    return len(list((data_dir / "raw" / "images").iterdir()))
 
 
 def count_images_from_s3():
@@ -109,7 +110,7 @@ def load_features(filename: str):
 
 
 def load_features_locally(filename: str):
-    path = data_dir / "features" / f"{filename}.npy"
+    path = data_dir / "raw" / "features" / f"{filename}.npy"
     log.info(f"Loading numpy array from {path}")
     return np.load(path)
 
@@ -122,7 +123,7 @@ def load_features_from_s3(filename: str):
     )
 
 
-def yield_features_filenames():
+def yield_feature_filenames():
     if storage_env == "local":
         return yield_features_filenames_locally()
     elif storage_env == "s3":
@@ -132,7 +133,7 @@ def yield_features_filenames():
 
 
 def yield_features_filenames_locally():
-    for path in (data_dir / "features").iterdir():
+    for path in (data_dir / "raw" / "features").iterdir():
         yield path.stem
 
 
@@ -141,3 +142,69 @@ def yield_features_filenames_from_s3():
     for page in paginator.paginate(Bucket=bucket, Prefix="features"):
         for content in page["Contents"]:
             yield Path(content["Key"]).stem
+
+
+def count_features():
+    if storage_env == "local":
+        return count_features_locally()
+    elif storage_env == "s3":
+        return count_features_from_s3()
+    else:
+        raise ValueError("Unknown environment")
+
+
+def count_features_locally():
+    return len(list((data_dir / "raw" / "features").iterdir()))
+
+
+def count_features_from_s3():
+    paginator = s3.get_paginator("list_objects_v2")
+    count = 0
+    for page in paginator.paginate(Bucket=bucket, Prefix="features"):
+        count += len(page["Contents"])
+    return count
+
+
+def load_model(model_name: str):
+    if storage_env == "local":
+        return load_model_locally(model_name)
+    elif storage_env == "s3":
+        return load_model_from_s3(model_name)
+    else:
+        raise ValueError("Unknown environment")
+
+
+def load_model_locally(model_name: str):
+    path = data_dir / "models" / f"{model_name}.npy"
+    log.info(f"Loading model from {path}")
+    return np.load(path)
+
+
+def load_model_from_s3(model_name: str):
+    key = f"models/{model_name}.npy"
+    log.info(f"Loading model from s3: {bucket} {key}")
+    return np.load(
+        BytesIO(s3.get_object(Bucket=bucket, Key=key)["Body"].read())
+    )
+
+
+def load_json(filename: str):
+    if storage_env == "local":
+        return load_json_locally(filename)
+    elif storage_env == "s3":
+        return load_json_from_s3(filename)
+    else:
+        raise ValueError("Unknown environment")
+
+
+def load_json_locally(filename: str):
+    path = data_dir / f"{filename}.json"
+    log.info(f"Loading json from {path}")
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def load_json_from_s3(filename: str):
+    key = f"{filename}.json"
+    log.info(f"Loading json from s3: {bucket} {key}")
+    return json.loads(s3.get_object(Bucket=bucket, Key=key)["Body"].read())
