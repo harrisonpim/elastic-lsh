@@ -3,7 +3,6 @@ from typing import List, Optional, Union
 
 import numpy as np
 from sklearn.cluster import KMeans
-from tqdm import tqdm
 
 
 class LSHModel:
@@ -47,13 +46,11 @@ class LSHModel:
                 "(n_groups and n_clusters) must be specified"
             )
 
-    def fit(self, features: np.ndarray, verbose: bool = False) -> List[KMeans]:
+    def fit(self, features: np.ndarray) -> List[KMeans]:
         feature_groups = np.split(
             features, indices_or_sections=self.n_groups, axis=1
         )
 
-        if verbose:
-            feature_groups = tqdm(feature_groups)
         models = [
             KMeans(n_clusters=self.n_clusters).fit(feature_group)
             for feature_group in feature_groups

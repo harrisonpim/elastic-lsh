@@ -1,6 +1,6 @@
 # Create an IAM role for the ECS tasks
 resource "aws_iam_role" "ecs" {
-  name = "ecs-role"
+  name = "ecs-task-role"
 
   # Add trust policy for the ECS tasks
   assume_role_policy = <<EOF
@@ -19,18 +19,13 @@ resource "aws_iam_role" "ecs" {
 EOF
 }
 
-# Attach the opensearch access policy to the role
-resource "aws_iam_policy_attachment" "ecs_es" {
-  name       = "ecs-es-policy-attachment"
-  roles      = [aws_iam_role.ecs.name]
-  policy_arn = "arn:aws:iam::aws:policy/AmazonOpenSearchServiceFullAccess"
-}
-
-# Attach the s3 access policy to the role
-resource "aws_iam_policy_attachment" "ecs_s3" {
-  name       = "ecs-s3-policy-attachment"
-  roles      = [aws_iam_role.ecs.name]
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+resource "aws_iam_role_policy_attachment" "ecs" {
+  for_each = toset([
+    "arn:aws:iam::aws:policy/AmazonS3FullAccess",
+    "arn:aws:iam::aws:policy/AmazonOpenSearchServiceFullAccess"
+  ])
+  role       = aws_iam_role.ecs.name
+  policy_arn = each.value
 }
 
 # Create an IAM role for the ECS task execution
@@ -53,13 +48,14 @@ resource "aws_iam_role" "ecs_execution" {
 EOF
 }
 
-# Attach the ECS task execution policy to the role
-resource "aws_iam_policy_attachment" "ecs_execution" {
-  name       = "ecs-execution-policy-attachment"
-  roles      = [aws_iam_role.ecs_execution.name]
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+resource "aws_iam_role_policy_attachment" "ecs_execution" {
+  for_each = toset([
+    "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
+    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
+  ])
+  role       = aws_iam_role.ecs_execution.name
+  policy_arn = each.value
 }
-
 
 # Create an IAM role for accessing s3 and opensearch from local machine
 resource "aws_iam_role" "local" {
@@ -80,16 +76,12 @@ resource "aws_iam_role" "local" {
 EOF
 }
 
-# Attach the opensearch access policy to the role
-resource "aws_iam_policy_attachment" "local_es" {
-  name       = "local-es-policy-attachment"
-  roles      = [aws_iam_role.local.name]
-  policy_arn = "arn:aws:iam::aws:policy/AmazonOpenSearchServiceFullAccess"
-}
 
-# Attach the s3 access policy to the role
-resource "aws_iam_policy_attachment" "local_s3" {
-  name       = "local-s3-policy-attachment"
-  roles      = [aws_iam_role.local.name]
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+resource "aws_iam_role_policy_attachment" "local" {
+  for_each = toset([
+    "arn:aws:iam::aws:policy/AmazonOpenSearchServiceFullAccess",
+    "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+  ])
+  role       = aws_iam_role.local.name
+  policy_arn = each.value
 }

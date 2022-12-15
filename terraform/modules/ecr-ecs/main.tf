@@ -14,6 +14,9 @@ variable "region" {
 variable "ecs_task_execution_role_arn" {
   type = string
 }
+variable "ecs_task_role_arn" {
+  type = string
+}
 
 variable "ecs_cluster_id" {
   type = string
@@ -45,7 +48,9 @@ resource "aws_ecs_task_definition" "ecs_task" {
   cpu                      = "256"
   memory                   = "512"
   execution_role_arn       = var.ecs_task_execution_role_arn
-  container_definitions    = <<DEFINITION
+  task_role_arn            = var.ecs_task_role_arn
+
+  container_definitions = <<DEFINITION
 [
   {
     "name": "${var.name}",
@@ -74,7 +79,7 @@ DEFINITION
 }
 
 # Create an ECS FARGATE service to run the task
-resource "aws_ecs_service" "get_data" {
+resource "aws_ecs_service" "fargate" {
   name            = var.name
   task_definition = aws_ecs_task_definition.ecs_task.arn
   cluster         = var.ecs_cluster_id
@@ -82,7 +87,8 @@ resource "aws_ecs_service" "get_data" {
 
   # Configure the service to use the VPC and security group
   network_configuration {
-    security_groups = var.security_group_ids
-    subnets         = var.subnet_ids
+    security_groups  = var.security_group_ids
+    subnets          = var.subnet_ids
+    assign_public_ip = true
   }
 }

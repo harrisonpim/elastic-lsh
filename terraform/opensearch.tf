@@ -3,6 +3,15 @@ resource "aws_iam_service_linked_role" "opensearch_role" {
   aws_service_name = "opensearchservice.amazonaws.com"
 }
 
+resource "random_password" "opensearch" {
+  length  = 64
+  special = false
+}
+
+locals {
+  opensearch_username = "admin"
+}
+
 resource "aws_opensearch_domain" "elastic_lsh" {
   domain_name = "elastic-lsh"
 
@@ -25,6 +34,18 @@ resource "aws_opensearch_domain" "elastic_lsh" {
     volume_size = 10
   }
 
+  # Set a master username and password
+  advanced_security_options {
+    enabled                        = false
+    internal_user_database_enabled = true
+    master_user_options {
+      master_user_name     = local.opensearch_username
+      master_user_password = random_password.opensearch.result
+
+    }
+  }
+
+  # Define the access policy for the OpenSearch domain
   access_policies = <<CONFIG
 {
     "Version": "2012-10-17",

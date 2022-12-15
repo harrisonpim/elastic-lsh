@@ -23,14 +23,14 @@ resource "aws_security_group" "opensearch" {
     from_port   = 9200
     to_port     = 9200
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["10.0.0.0/16"]
   }
 
   ingress {
     from_port   = 9300
     to_port     = 9300
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["10.0.0.0/16"]
   }
 }
 
@@ -40,34 +40,21 @@ resource "aws_security_group" "ecs" {
   description = "Security group for ECS cluster"
   vpc_id      = aws_vpc.elastic_lsh.id
 
-  # Allow inbound traffic on port 22
+  # Allow inbound traffic on port 80
   ingress {
-    from_port   = 22
-    to_port     = 22
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["10.0.0.0/16"]
   }
 
-  # Allow outbound traffic to the Internet
+  # Allow outbound traffic on all ports
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
-}
 
-# Create a security group for the s3 bucket
-resource "aws_security_group" "s3" {
-  name        = "s3-security-group"
-  description = "Security group for s3 bucket"
-  vpc_id      = aws_vpc.elastic_lsh.id
-
-  # Allow inbound traffic on port 443
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 }

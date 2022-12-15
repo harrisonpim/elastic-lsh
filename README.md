@@ -4,4 +4,3 @@ Extending the code in the [Super fast approximate nearest neighbour search with 
 
 - whole project should be orchestrated with docker
 - should be able to run the apps locally or deploy them to AWS using terraform
-- changes should be automatically deployed to AWS using github actions

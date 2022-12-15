@@ -3,68 +3,60 @@ version: "3.8"
 services:
   get-data:
     build:
-      dockerfile: ../Dockerfile
-      context: get-data
+      dockerfile: Dockerfile
+      context: .
+      args:
+        - APPLICATION_NAME=get-data
     image: get-data
-    env_file: .env
-    environment:
-      - STORAGE_ENVIRONMENT=s3
-      - DATA_DIR=/data
     volumes:
       - type: bind
         source: ./data
         target: /data
-      - type: bind
-        source: ./src
-        target: /src
       - type: bind
         source: ~/.aws
         target: /root/.aws
 
   infer-features:
     build:
-      dockerfile: ../Dockerfile
-      context: infer-features
+      dockerfile: Dockerfile
+      context: .
+      args:
+        - APPLICATION_NAME=infer-features
     image: infer-features
-    env_file: .env
-    environment:
-      - STORAGE_ENVIRONMENT=s3
-      - DATA_DIR=/data
     volumes:
       - type: bind
         source: ./data
         target: /data
+      - type: bind
+        source: ~/.aws
+        target: /root/.aws
 
   train-lsh-model:
     build:
-      dockerfile: ../Dockerfile
-      context: train-lsh-model
+      dockerfile: Dockerfile
+      context: .
+      args:
+        - APPLICATION_NAME=train-lsh-model
     image: train-lsh-model
-    env_file: .env
-    environment:
-      - STORAGE_ENVIRONMENT=s3
-      - DATA_DIR=/data
     volumes:
       - type: bind
         source: ./data
         target: /data
       - type: bind
-        source: ./src
-        target: /src
+        source: ~/.aws
+        target: /root/.aws
 
   infer-hashes:
     build:
-      dockerfile: ../Dockerfile
-      context: infer-hashes
+      dockerfile: Dockerfile
+      context: .
+      args:
+        - APPLICATION_NAME=infer-hashes
     image: infer-hashes
-    env_file: .env
-    environment:
-      - STORAGE_ENVIRONMENT=s3
-      - DATA_DIR=/data
     volumes:
       - type: bind
         source: ./data
         target: /data
       - type: bind
-        source: ./src
-        target: /src
+        source: ~/.aws
+        target: /root/.aws

@@ -7,6 +7,7 @@ from src.load import (
     load_features,
     load_json,
     load_model,
+    get_latest_model_name,
     yield_feature_filenames,
 )
 from src.log import get_logger
@@ -23,8 +24,10 @@ es = Elasticsearch(
     ),
 )
 
-
-model_name = os.environ.get("MODEL_NAME")
+if os.environ.get("MODEL_NAME"):
+    model_name = os.environ.get("MODEL_NAME")
+else:
+    model_name = get_latest_model_name()
 log.info(f"Loading model {model_name}")
 model_bytes = load_model(model_name)
 model = LSHModel(model_bytes=model_bytes)

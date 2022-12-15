@@ -34,7 +34,14 @@ if storage_env == "s3":
     else:
         s3 = boto3.client("s3")
 else:
-    data_dir = Path(os.environ.get("DATA_DIR"))
+    data_dir = Path("/data").absolute()
+    data_dir.mkdir(parents=True, exist_ok=True)
+    image_dir = data_dir / "images"
+    image_dir.mkdir(parents=True, exist_ok=True)
+    feature_dir = data_dir / "features"
+    feature_dir.mkdir(parents=True, exist_ok=True)
+    model_dir = data_dir / "models"
+    model_dir.mkdir(parents=True, exist_ok=True)
 
 
 def save_image(image: Image, filename: str):
@@ -43,11 +50,11 @@ def save_image(image: Image, filename: str):
     elif storage_env == "s3":
         save_image_to_s3(image, filename)
     else:
-        raise ValueError("Unknown environment")
+        raise ValueError(f"Unknown environment: {storage_env}")
 
 
 def save_image_locally(image: Image, filename: str):
-    path = data_dir / "raw" / "images" / f"{filename}.jpg"
+    path = image_dir / f"{filename}.jpg"
     log.info(f"Saving image to {path}")
     image.save(path)
 
@@ -71,11 +78,11 @@ def save_json(json_data: dict, filename: str):
     elif storage_env == "s3":
         save_json_to_s3(json_data, filename)
     else:
-        raise ValueError("Unknown environment")
+        raise ValueError(f"Unknown environment: {storage_env}")
 
 
 def save_json_locally(json_data: dict, filename: str):
-    path = data_dir / "raw" / f"{filename}.json"
+    path = data_dir / f"{filename}.json"
     log.info(f"Saving json to {path}")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(json_data, f)
@@ -98,11 +105,11 @@ def save_features(array: np.ndarray, filename: str):
     elif storage_env == "s3":
         save_features_to_s3(array, filename)
     else:
-        raise ValueError("Unknown environment")
+        raise ValueError(f"Unknown environment: {storage_env}")
 
 
 def save_features_locally(array: np.ndarray, filename: str):
-    path = data_dir / "raw" / "features" / f"{filename}.npy"
+    path = feature_dir / f"{filename}.npy"
     log.info(f"Saving numpy array to {path}")
     np.save(path, array)
 
@@ -126,11 +133,11 @@ def save_model(model: LSHModel, model_name: str):
     elif storage_env == "s3":
         save_model_to_s3(model, model_name)
     else:
-        raise ValueError("Unknown environment")
+        raise ValueError(f"Unknown environment: {storage_env}")
 
 
 def save_model_locally(model: LSHModel, model_name: str):
-    path = data_dir / "models" / model_name
+    path = model_dir / model_name
     log.info(f"Saving model to {path}")
     model.save(path)
 

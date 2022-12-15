@@ -11,9 +11,13 @@ rm -f $DOTENV_PATH
 touch $DOTENV_PATH
 
 # add the environment variables to the .env file
+echo "STORAGE_ENVIRONMENT=s3" >> $DOTENV_PATH
 echo "AWS_PROFILE=harrisonpim" >> $DOTENV_PATH
 
 # add the terraform outputs to the .env file, without whitespace
+cd $GIT_ROOT/terraform
+
 terraform output -json \
   | jq -r 'to_entries[] | "\(.key)=\(.value.value)"' \
   >> $DOTENV_PATH
+

@@ -33,7 +33,14 @@ if storage_env == "s3":
     else:
         s3 = boto3.client("s3")
 else:
-    data_dir = Path(os.environ.get("DATA_DIR"))
+    data_dir = Path("/data").absolute()
+    data_dir.mkdir(parents=True, exist_ok=True)
+    image_dir = data_dir / "images"
+    image_dir.mkdir(parents=True, exist_ok=True)
+    feature_dir = data_dir / "features"
+    feature_dir.mkdir(parents=True, exist_ok=True)
+    model_dir = data_dir / "models"
+    model_dir.mkdir(parents=True, exist_ok=True)
 
 
 def load_image(filename: str):
@@ -42,11 +49,11 @@ def load_image(filename: str):
     elif storage_env == "s3":
         return load_image_from_s3(filename)
     else:
-        raise ValueError("Unknown environment")
+        raise ValueError(f"Unknown environment: {storage_env}")
 
 
 def load_image_locally(filename: str):
-    path = data_dir / "raw" / "images" / f"{filename}.jpg"
+    path = image_dir / f"{filename}.jpg"
     log.info(f"Loading image from {path}")
     return Image.open(path)
 
@@ -64,11 +71,11 @@ def yield_image_filenames():
     elif storage_env == "s3":
         return yield_image_filenames_from_s3()
     else:
-        raise ValueError("Unknown environment")
+        raise ValueError(f"Unknown environment: {storage_env}")
 
 
 def yield_image_filenames_locally():
-    for path in (data_dir / "raw" / "images").iterdir():
+    for path in image_dir.iterdir():
         yield path.stem
 
 
@@ -85,11 +92,11 @@ def count_images():
     elif storage_env == "s3":
         return count_images_from_s3()
     else:
-        raise ValueError("Unknown environment")
+        raise ValueError(f"Unknown environment: {storage_env}")
 
 
 def count_images_locally():
-    return len(list((data_dir / "raw" / "images").iterdir()))
+    return len(list(image_dir.iterdir()))
 
 
 def count_images_from_s3():
@@ -106,11 +113,11 @@ def load_features(filename: str):
     elif storage_env == "s3":
         return load_features_from_s3(filename)
     else:
-        raise ValueError("Unknown environment")
+        raise ValueError(f"Unknown environment: {storage_env}")
 
 
 def load_features_locally(filename: str):
-    path = data_dir / "raw" / "features" / f"{filename}.npy"
+    path = feature_dir / f"{filename}.npy"
     log.info(f"Loading numpy array from {path}")
     return np.load(path)
 
@@ -129,11 +136,11 @@ def yield_feature_filenames():
     elif storage_env == "s3":
         return yield_features_filenames_from_s3()
     else:
-        raise ValueError("Unknown environment")
+        raise ValueError(f"Unknown environment: {storage_env}")
 
 
 def yield_features_filenames_locally():
-    for path in (data_dir / "raw" / "features").iterdir():
+    for path in feature_dir.iterdir():
         yield path.stem
 
 
@@ -150,11 +157,11 @@ def count_features():
     elif storage_env == "s3":
         return count_features_from_s3()
     else:
-        raise ValueError("Unknown environment")
+        raise ValueError(f"Unknown environment: {storage_env}")
 
 
 def count_features_locally():
-    return len(list((data_dir / "raw" / "features").iterdir()))
+    return len(list(feature_dir.iterdir()))
 
 
 def count_features_from_s3():
@@ -165,17 +172,44 @@ def count_features_from_s3():
     return count
 
 
+def get_latest_model_name():
+    if storage_env == "local":
+        return get_latest_model_name_locally()
+    elif storage_env == "s3":
+        return get_latest_model_name_from_s3()
+    else:
+        raise ValueError(f"Unknown environment: {storage_env}")
+
+
+def get_latest_model_name_locally():
+    models = list(model_dir.iterdir())
+    if not models:
+        raise ValueError("No models found")
+    return max(models, key=os.path.getctime).stem
+
+
+def get_latest_model_name_from_s3():
+    paginator = s3.get_paginator("list_objects_v2")
+    models = []
+    for page in paginator.paginate(Bucket=bucket, Prefix="models"):
+        for content in page["Contents"]:
+            models.append(Path(content["Key"]).stem)
+    if not models:
+        raise ValueError("No models found")
+    return max(models)
+
+
 def load_model(model_name: str):
     if storage_env == "local":
         return load_model_locally(model_name)
     elif storage_env == "s3":
         return load_model_from_s3(model_name)
     else:
-        raise ValueError("Unknown environment")
+        raise ValueError(f"Unknown environment: {storage_env}")
 
 
 def load_model_locally(model_name: str):
-    path = data_dir / "models" / f"{model_name}.npy"
+    path = model_dir / f"{model_name}.npy"
     log.info(f"Loading model from {path}")
     return np.load(path)
 
@@ -194,7 +228,7 @@ def load_json(filename: str):
     elif storage_env == "s3":
         return load_json_from_s3(filename)
     else:
-        raise ValueError("Unknown environment")
+        raise ValueError(f"Unknown environment: {storage_env}")
 
 
 def load_json_locally(filename: str):
