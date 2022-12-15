@@ -21,19 +21,37 @@ This will create a set of resources in AWS that will be used by the pipeline. Th
 
 See [the architecture documentation](architecture.md) for more details.
 
+### Destroy AWS infrastructure
+
+To destroy the AWS infrastructure, run:
+
+```sh
+terraform destroy
+```
+
+### Environment variables
+
+Applying the terraform runs the `scripts/create-local-env-file.sh` script, which creates a `.env` file in the root of the repository. This file contains the environment variables that are used by the pipeline. The script uses the terraform outputs to populate the variables.
+
 ## Building the pipeline services
 
 ```sh
 docker compose build
 ```
 
+To build a production version of the app (without local environment variables built in), run:
+
+```sh
+docker compose -f docker-compose.prod.yml build
+```
+
 ## Running a container locally
 
 ```sh
-docker compose -f docker-compose.local.yml run <service>
+docker compose run <service>
 ```
 
-You should replace `<service>` with the name of the pipeline step that you want to run. Specifying `-f docker-compose.local.yml` will instruct docker to use the local environment variables in `.env` to run the container.
+You should replace `<service>` with the name of the pipeline step that you want to run. NB this will run the local version of the app, which will require a `.env` file to be present in the root of the repository (see the [environment variables section](#environment-variables) for more details).
 
 ## Push a container image to ECR
 

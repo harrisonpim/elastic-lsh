@@ -1,62 +1,26 @@
 version: "3.8"
 
 services:
-  get-data:
-    build:
-      dockerfile: Dockerfile
-      context: .
-      args:
-        - APPLICATION_NAME=get-data
-    image: get-data
-    volumes:
-      - type: bind
-        source: ./data
-        target: /data
-      - type: bind
-        source: ~/.aws
-        target: /root/.aws
+  get-images:
+    extends:
+      file: ./docker-compose.prod.yml
+      service: get-images
+    env_file: .env
 
   infer-features:
-    build:
-      dockerfile: Dockerfile
-      context: .
-      args:
-        - APPLICATION_NAME=infer-features
-    image: infer-features
-    volumes:
-      - type: bind
-        source: ./data
-        target: /data
-      - type: bind
-        source: ~/.aws
-        target: /root/.aws
+    extends:
+      file: ./docker-compose.prod.yml
+      service: infer-features
+    env_file: .env
 
   train-lsh-model:
-    build:
-      dockerfile: Dockerfile
-      context: .
-      args:
-        - APPLICATION_NAME=train-lsh-model
-    image: train-lsh-model
-    volumes:
-      - type: bind
-        source: ./data
-        target: /data
-      - type: bind
-        source: ~/.aws
-        target: /root/.aws
+    extends:
+      file: ./docker-compose.prod.yml
+      service: train-lsh-model
+    env_file: .env
 
   infer-hashes:
-    build:
-      dockerfile: Dockerfile
-      context: .
-      args:
-        - APPLICATION_NAME=infer-hashes
-    image: infer-hashes
-    volumes:
-      - type: bind
-        source: ./data
-        target: /data
-      - type: bind
-        source: ~/.aws
-        target: /root/.aws
+    extends:
+      file: ./docker-compose.prod.yml
+      service: infer-hashes
+    env_file: .env

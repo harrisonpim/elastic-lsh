@@ -6,7 +6,7 @@ resource "aws_ecs_cluster" "cluster" {
 # Create tasks definitions and repositories for each of the services
 module "ecr_ecs_get_data" {
   source                      = "./modules/ecr-ecs"
-  name                        = "elastic-lsh-get-data"
+  name                        = "elastic-lsh-get-images"
   region                      = local.region
   ecs_task_execution_role_arn = aws_iam_role.ecs_execution.arn
   ecs_task_role_arn           = aws_iam_role.ecs.arn

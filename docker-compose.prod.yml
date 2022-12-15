@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  get-images:
+    build:
+      dockerfile: pipeline/Dockerfile
+      context: .
+      args:
+        - APPLICATION_NAME=get-images
+    image: get-images
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data
+      - type: bind
+        source: ~/.aws
+        target: /root/.aws
+
+  infer-features:
+    build:
+      dockerfile: pipeline/Dockerfile
+      context: .
+      args:
+        - APPLICATION_NAME=infer-features
+    image: infer-features
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data
+      - type: bind
+        source: ~/.aws
+        target: /root/.aws
+
+  train-lsh-model:
+    build:
+      dockerfile: pipeline/Dockerfile
+      context: .
+      args:
+        - APPLICATION_NAME=train-lsh-model
+    image: train-lsh-model
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data
+      - type: bind
+        source: ~/.aws
+        target: /root/.aws
+
+  infer-hashes:
+    build:
+      dockerfile: pipeline/Dockerfile
+      context: .
+      args:
+        - APPLICATION_NAME=infer-hashes
+    image: infer-hashes
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data
+      - type: bind
+        source: ~/.aws
+        target: /root/.aws
