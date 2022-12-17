@@ -1,13 +1,12 @@
 import os
 
 from elasticsearch import Elasticsearch
-
-from src.load import (
+from src.io import (
     count_features,
+    get_latest_model_name,
     load_features,
     load_json,
     load_model,
-    get_latest_model_name,
     yield_feature_filenames,
 )
 from src.log import get_logger
@@ -17,8 +16,8 @@ log = get_logger()
 
 log.info("Loading Elasticsearch client")
 es = Elasticsearch(
-    os.environ.get("AWS_OPENSEARCH_ENDPOINT"),
-    basic_auth=(
+    "https://" + os.environ.get("AWS_OPENSEARCH_ENDPOINT") + ":443",
+    http_auth=(
         os.environ.get("AWS_OPENSEARCH_USERNAME"),
         os.environ.get("AWS_OPENSEARCH_PASSWORD"),
     ),
@@ -34,18 +33,21 @@ model = LSHModel(model_bytes=model_bytes)
 
 
 log.info("Loading image descriptions")
-descriptions = load_json("descriptions.json")
+descriptions = load_json("descriptions")
 
-log.info(f"Creating index {model_name}")
-if es.indices.exists(index=model_name):
-    es.indices.delete(index=model_name)
+index_name = model_name.replace("T", "-").replace(":", "-")
+log.info(f"Creating index {index_name}")
+if es.indices.exists(index=index_name):
+    es.indices.delete(index=index_name)
 
 es.indices.create(
-    index=model_name,
-    mappings={
-        "properties": {
-            "lsh-hash": {"type": "keyword"},
-            "description": {"type": "text", "analyzer": "english"},
+    index=index_name,
+    body={
+        "mappings": {
+            "properties": {
+                "lsh-hash": {"type": "keyword"},
+                "description": {"type": "text", "analyzer": "english"},
+            }
         }
     },
 )
@@ -54,26 +56,27 @@ es.indices.create(
 total_features = count_features()
 for i, filename in enumerate(yield_feature_filenames()):
     log.info(
-        f"Processing feature {i + 1} of {total_features}"
-        f"({i/total_features*100: .2f} %)"
+        f"Processing feature {i + 1} of {total_features} "
+        f"({i/total_features*100:.2f}%)"
     )
     try:
         feature_vector = load_features(filename)
+        log.debug(f"Inferring hashes for {filename}")
         predictions = model.predict(feature_vector.reshape(1, -1))
     except Exception as e:
-        log.error(f"Error processing feature {filename}: {e}")
+        log.error(f"Error processing {filename}: {e}")
         continue
 
-    log.info(f"Indexing feature {filename}")
+    log.debug(f"Indexing hashes for {filename}")
     try:
         es.index(
-            index=model_name,
+            index=index_name,
             id=filename,
-            document={
+            body={
                 "lsh-hash": predictions,
                 "description": descriptions[filename],
             },
         )
     except Exception as e:
-        log.error(f"Error indexing feature {filename}: {e}")
+        log.error(f"Error indexing hashes for {filename}: {e}")
         continue

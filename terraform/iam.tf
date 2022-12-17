@@ -22,7 +22,8 @@ EOF
 resource "aws_iam_role_policy_attachment" "ecs" {
   for_each = toset([
     "arn:aws:iam::aws:policy/AmazonS3FullAccess",
-    "arn:aws:iam::aws:policy/AmazonOpenSearchServiceFullAccess"
+    "arn:aws:iam::aws:policy/AmazonOpenSearchServiceFullAccess",
+    "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
   ])
   role       = aws_iam_role.ecs.name
   policy_arn = each.value
@@ -50,8 +51,7 @@ EOF
 
 resource "aws_iam_role_policy_attachment" "ecs_execution" {
   for_each = toset([
-    "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
-    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
+    "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
   ])
   role       = aws_iam_role.ecs_execution.name
   policy_arn = each.value

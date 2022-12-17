@@ -6,32 +6,9 @@ resource "aws_vpc" "elastic_lsh" {
 
 # Create a public subnet
 resource "aws_subnet" "public" {
-  vpc_id                  = aws_vpc.elastic_lsh.id
-  availability_zone       = "eu-west-1a"
-  map_public_ip_on_launch = true
-  cidr_block              = "10.0.1.0/24"
-}
-
-# Create a security group for the opensearch cluster
-resource "aws_security_group" "opensearch" {
-  name        = "opensearch-security-group"
-  description = "Security group for opensearch cluster"
-  vpc_id      = aws_vpc.elastic_lsh.id
-
-  # Allow inbound traffic on port 9200 and 9300
-  ingress {
-    from_port   = 9200
-    to_port     = 9200
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
-  }
-
-  ingress {
-    from_port   = 9300
-    to_port     = 9300
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
-  }
+  vpc_id            = aws_vpc.elastic_lsh.id
+  availability_zone = "eu-west-1a"
+  cidr_block        = "10.0.1.0/24"
 }
 
 # Create a security group for the ECS cluster

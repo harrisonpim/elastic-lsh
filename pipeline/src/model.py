@@ -75,7 +75,7 @@ class LSHModel:
         return self.encode(predictions)
 
     def save(self, file):
-        np.save(file, self.models)
+        np.save(file, self.models, allow_pickle=True)
 
     def load(self, path: Path) -> List[KMeans]:
         return np.load(path, allow_pickle=True)

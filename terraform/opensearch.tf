@@ -1,31 +1,22 @@
-# Define the service-linked role for OpenSearch
-resource "aws_iam_service_linked_role" "opensearch_role" {
-  aws_service_name = "opensearchservice.amazonaws.com"
-}
-
-resource "random_password" "opensearch" {
-  length  = 64
-  special = false
-}
 
 locals {
   opensearch_username = "admin"
 }
 
-resource "aws_opensearch_domain" "elastic_lsh" {
-  domain_name = "elastic-lsh"
+resource "random_password" "opensearch" {
+  length           = 64
+  min_upper        = 1
+  min_lower        = 1
+  min_numeric      = 1
+  min_special      = 1
+  override_special = "!#$%&*()-_+[]{}<>:?" # don't use =
+}
 
+resource "aws_opensearch_domain" "elastic_lsh" {
+  domain_name    = "elastic-lsh"
   engine_version = "Elasticsearch_7.10"
   cluster_config {
     instance_type = "t3.small.search"
-  }
-
-  vpc_options {
-    subnet_ids = [
-      aws_subnet.public.id
-    ]
-
-    security_group_ids = [aws_security_group.opensearch.id]
   }
 
   # Define the EBS volume for the EC2 instance
@@ -36,13 +27,23 @@ resource "aws_opensearch_domain" "elastic_lsh" {
 
   # Set a master username and password
   advanced_security_options {
-    enabled                        = false
+    enabled                        = true
     internal_user_database_enabled = true
     master_user_options {
       master_user_name     = local.opensearch_username
       master_user_password = random_password.opensearch.result
 
     }
+  }
+  domain_endpoint_options {
+    enforce_https       = true
+    tls_security_policy = "Policy-Min-TLS-1-2-2019-07"
+  }
+  encrypt_at_rest {
+    enabled = true
+  }
+  node_to_node_encryption {
+    enabled = true
   }
 
   # Define the access policy for the OpenSearch domain

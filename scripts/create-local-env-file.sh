@@ -14,10 +14,12 @@ touch $DOTENV_PATH
 echo "STORAGE_ENVIRONMENT=s3" >> $DOTENV_PATH
 echo "AWS_PROFILE=harrisonpim" >> $DOTENV_PATH
 
-# add the terraform outputs to the .env file, without whitespace
+# add the terraform outputs to the .env file. 
+# the values should be wrapped in double quotes
 cd $GIT_ROOT/terraform
 
 terraform output -json \
   | jq -r 'to_entries[] | "\(.key)=\(.value.value)"' \
+  | sed 's/=/="/' \
+  | sed 's/$/"/' \
   >> $DOTENV_PATH
-

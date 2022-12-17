@@ -3,9 +3,8 @@ from io import BytesIO
 import requests
 from datasets import load_dataset
 from PIL import Image, UnidentifiedImageError
-
+from src.io import save_image, save_json, yield_image_filenames
 from src.log import get_logger
-from src.save import save_image, save_json
 
 log = get_logger()
 
@@ -16,22 +15,35 @@ dataset = load_dataset(
     keep_in_memory=True,
 )
 
-log.info("Downloading images")
-descriptions = {}
-for i, row in enumerate(dataset):
-    log.info(
-        f"Processing row {i} of {len(dataset)} ({i/len(dataset)*100:.2f}%)"
-    )
-    try:
-        image_response = requests.get(row["URL"], timeout=5)
-        image = Image.open(BytesIO(image_response.content))
-        image.thumbnail((256, 256))
-
-        save_image(image=image, filename=row["hash"])
-        descriptions[row["hash"]] = row["TEXT"]
-
-    except (requests.RequestException, UnidentifiedImageError, OSError) as e:
-        log.error(f"Error downloading image from {row['URL']}: {e}")
-        continue
-
+log.info("Saving descriptions")
+descriptions = {row["hash"]: row["TEXT"] for row in dataset}
 save_json(descriptions, "descriptions")
+
+log.info("Downloading images")
+existing_images = set(yield_image_filenames())
+for i, row in enumerate(dataset):
+    if str(row["hash"]) in existing_images:
+        log.info(
+            f"Skipping row {i}/{len(dataset)} ({i/len(dataset)*100:.2f}%)")
+        continue
+    else:
+        log.info(
+            f"Processing row {i}/{len(dataset)} ({i/len(dataset)*100:.2f}%)"
+        )
+        try:
+            log.debug(f"Downloading {row['URL']}")
+            image_response = requests.get(row["URL"], timeout=5)
+            image = Image.open(BytesIO(image_response.content))
+            image = image.convert("RGB")
+            image.thumbnail((256, 256))
+
+            save_image(image=image, filename=row["hash"])
+            descriptions[row["hash"]] = row["TEXT"]
+
+        except (
+            requests.RequestException,
+            UnidentifiedImageError,
+            OSError,
+        ) as e:
+            log.error(f"Error downloading image from {row['URL']}: {e}")
+            continue

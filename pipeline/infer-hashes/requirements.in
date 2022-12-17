@@ -1,4 +1,4 @@
 numpy
 scikit-learn
 tqdm
-elasticsearch==8.3.3
+elasticsearch==7.10.1
